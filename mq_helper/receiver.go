@@ -26,6 +26,7 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 		return
 	}
 	r.registration[queueName] = listener
+	r.logger.Log("New Listener registered, queue", queueName)
 
 	q, _ := r.ch.QueueDeclare(
 		queueName, 		// name
