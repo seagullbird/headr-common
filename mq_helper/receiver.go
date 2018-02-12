@@ -68,8 +68,10 @@ func NewReceiver(logger log.Logger) *AMQPReceiver {
 	if err != nil {
 		logger.Log("Failed to open AMQP channel", err)
 	}
+
 	return &AMQPReceiver{
 		ch: ch,
 		logger:	logger,
+		registration: make(map[string]Listener),
 	}
 }
