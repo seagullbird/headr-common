@@ -1,7 +1,7 @@
 package mq_helper
 
 import (
-	"github.com/go-kit/kit/log"
+	"log"
 	"github.com/streadway/amqp"
 	"github.com/seagullbird/headr-common/config"
 	"reflect"
@@ -13,7 +13,6 @@ type Receiver interface {
 
 type AMQPReceiver struct {
 	ch 				*amqp.Channel
-	logger 			log.Logger
 	registration	map[string]Listener
 }
 
@@ -22,11 +21,11 @@ type Listener func(delivery amqp.Delivery)
 
 func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	if l, ok := r.registration[queueName]; ok {
-		r.logger.Log("Listener already registered", reflect.ValueOf(l))
+		log.Println("Listener already registered", reflect.ValueOf(l))
 		return
 	}
 	r.registration[queueName] = listener
-	r.logger.Log("New Listener registered, queue", queueName)
+	log.Println("New Listener registered, queue", queueName)
 
 	q, _ := r.ch.QueueDeclare(
 		queueName, 		// name
@@ -54,7 +53,7 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	}()
 }
 
-func NewReceiver(logger log.Logger) Receiver {
+func NewReceiver() Receiver {
 	uri := amqp.URI{
 		Scheme:   "amqp",
 		Host:     config.MQSERVERNAME,
@@ -67,12 +66,11 @@ func NewReceiver(logger log.Logger) Receiver {
 
 	ch, err := conn.Channel()
 	if err != nil {
-		logger.Log("Failed to open AMQP channel", err)
+		log.Println("Failed to open AMQP channel", err)
 	}
 
 	return &AMQPReceiver{
 		ch: ch,
-		logger:	logger,
 		registration: make(map[string]Listener),
 	}
 }
