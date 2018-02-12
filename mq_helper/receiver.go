@@ -8,7 +8,7 @@ import (
 )
 
 type Receiver interface {
-	RegisterListener(queueName string, event interface{}, listener Listener)
+	RegisterListener(queueName string, listener Listener)
 }
 
 type AMQPReceiver struct {
@@ -54,7 +54,7 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	}()
 }
 
-func NewReceiver(logger log.Logger) *AMQPReceiver {
+func NewReceiver(logger log.Logger) Receiver {
 	uri := amqp.URI{
 		Scheme:   "amqp",
 		Host:     config.MQSERVERNAME,
