@@ -1,2 +1,2 @@
 # headr-common
-Common packages for Headr.
+Common packages for Headr services.
