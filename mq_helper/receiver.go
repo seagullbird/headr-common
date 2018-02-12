@@ -18,7 +18,7 @@ type AMQPReceiver struct {
 }
 
 // Listener is a function that takes action when an event is received.
-type Listener func(delivery amqp.Delivery, logger log.Logger)
+type Listener func(delivery amqp.Delivery)
 
 func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	if l, ok := r.registration[queueName]; ok {
@@ -49,7 +49,7 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	// Start listening
 	go func() {
 		for d := range qIn {
-			listener(d, r.logger)
+			listener(d)
 		}
 	}()
 }
