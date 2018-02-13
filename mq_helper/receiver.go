@@ -3,8 +3,8 @@ package mq_helper
 import (
 	"log"
 	"github.com/streadway/amqp"
-	"github.com/seagullbird/headr-common/config"
 	"reflect"
+	"github.com/go-kit/kit/util/conn"
 )
 
 type Receiver interface {
@@ -54,16 +54,10 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 }
 
 func NewReceiver() Receiver {
-	uri := amqp.URI{
-		Scheme:   "amqp",
-		Host:     config.MQSERVERNAME,
-		Port:     5672,
-		Username: "user",
-		Password: config.MQSERVERPWD,
-		Vhost:    "/",
+	conn, err := MakeConn()
+	if err != nil {
+		log.Println( "Failed to connect to RabbitMQ", err)
 	}
-	conn, err := amqp.Dial(uri.String())
-
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println("Failed to open AMQP channel", err)

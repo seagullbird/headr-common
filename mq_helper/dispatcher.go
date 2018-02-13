@@ -4,7 +4,6 @@ import (
 	"github.com/streadway/amqp"
 	"log"
 	"encoding/json"
-	"github.com/seagullbird/headr-common/config"
 )
 
 type Dispatcher interface {
@@ -40,19 +39,10 @@ func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
 }
 
 func NewDispatcher(queueName string) Dispatcher {
-	uri := amqp.URI{
-		Scheme:   "amqp",
-		Host:     config.MQSERVERNAME,
-		Port:     5672,
-		Username: "user",
-		Password: config.MQSERVERPWD,
-		Vhost:    "/",
-	}
-	conn, err := amqp.Dial(uri.String())
+	conn, err := MakeConn()
 	if err != nil {
-		log.Println("Failed to connect to RabbitMQ", err)
+		log.Println( "Failed to connect to RabbitMQ", err)
 	}
-
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println( "Failed to open a channel", err)
