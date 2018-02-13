@@ -4,7 +4,6 @@ import (
 	"log"
 	"github.com/streadway/amqp"
 	"reflect"
-	"github.com/go-kit/kit/util/conn"
 )
 
 type Receiver interface {
