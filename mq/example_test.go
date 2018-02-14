@@ -12,17 +12,17 @@ import (
 )
 
 // Example event
-type exampleTestEvent struct {
-	name string `json:"name"`
+type ExampleTestEvent struct {
+	Message string `json:"Message"`
 }
 
-func (e exampleTestEvent) String() string {
-	return fmt.Sprintf("exampleTestEvent, name=%s", e.name)
+func (e ExampleTestEvent) String() string {
+	return fmt.Sprintf("ExampleTestEvent, Message=%s", e.Message)
 }
 
 // Example listener
 func exampleListener(delivery amqp.Delivery) {
-	var event exampleTestEvent
+	var event ExampleTestEvent
 	if err := json.Unmarshal(delivery.Body, &event); err != nil {
 		panic(err)
 	}
@@ -30,36 +30,46 @@ func exampleListener(delivery amqp.Delivery) {
 }
 
 func Example() {
-	// Make connection to rabbitmq server
 	var (
 		servername = os.Getenv("RABBITMQ_PORT_5672_TCP_ADDR")
 		username   = "guest"
 		passwd     = "guest"
 	)
-	conn, err := mq.MakeConn(servername, username, passwd)
+
+	// New dispatcher
+	// Make connection to rabbitmq server
+	dConn, err := mq.MakeConn(servername, username, passwd)
 	if err != nil {
 		panic(err)
 	}
-	// New dispatcher
-	dispatcher := dispatch.NewDispatcher(conn, "example_test")
-	// New receiver
-	receiver := receive.NewReceiver(conn)
+	dispatcher := dispatch.NewDispatcher(dConn, "example_test")
 
-	// Dispatch a message
-	msg := exampleTestEvent{
-		name: "example-message",
+	// Dispatch a Message
+	msg := ExampleTestEvent{
+		Message: "example-message",
 	}
 	err = dispatcher.DispatchMessage(msg)
 	if err != nil {
 		panic(err)
 	}
 
-	// Register a message listener
+	// Wait for the Message to be produced
+	time.Sleep(time.Second)
+
+	// New receiver
+	// Make connection to rabbitmq server
+	rConn, err := mq.MakeConn(servername, username, passwd)
+	if err != nil {
+		panic(err)
+	}
+	receiver := receive.NewReceiver(rConn)
+
+	// Register a Message listener
 	receiver.RegisterListener("example_test", exampleListener)
 
-	// Wait for the message to be consumed
-	time.Sleep(3 * time.Second)
+	// Wait for the Message to be consumed
+	time.Sleep(time.Second)
 
 	// Output:
-	// Received new event: exampleTestEvent, name=example-message
+	// Received new event: ExampleTestEvent, Message=example-message
 }
