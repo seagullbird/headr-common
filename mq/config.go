@@ -1,4 +1,4 @@
-package config
+package mq
 
 var (
 	MQSERVERNAME = "rabbitmq-rabbitmq"

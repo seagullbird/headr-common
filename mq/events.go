@@ -1,4 +1,4 @@
-package mq_helper
+package mq
 
 import "fmt"
 

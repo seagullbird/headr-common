@@ -1,4 +1,4 @@
-package mq_helper
+package receive
 
 import (
 	"github.com/streadway/amqp"
@@ -52,11 +52,7 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	}()
 }
 
-func NewReceiver() Receiver {
-	conn, err := MakeConn()
-	if err != nil {
-		log.Println("Failed to connect to RabbitMQ", err)
-	}
+func NewReceiver(conn *amqp.Connection) Receiver {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println("Failed to open AMQP channel", err)

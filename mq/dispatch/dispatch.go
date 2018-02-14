@@ -1,4 +1,4 @@
-package mq_helper
+package dispatch
 
 import (
 	"encoding/json"
@@ -38,11 +38,7 @@ func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
 	return
 }
 
-func NewDispatcher(queueName string) Dispatcher {
-	conn, err := MakeConn()
-	if err != nil {
-		log.Println("Failed to connect to RabbitMQ", err)
-	}
+func NewDispatcher(conn *amqp.Connection, queueName string) Dispatcher {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println("Failed to open a channel", err)
