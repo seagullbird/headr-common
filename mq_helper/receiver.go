@@ -1,8 +1,8 @@
 package mq_helper
 
 import (
-	"log"
 	"github.com/streadway/amqp"
+	"log"
 	"reflect"
 )
 
@@ -11,8 +11,8 @@ type Receiver interface {
 }
 
 type AMQPReceiver struct {
-	ch 				*amqp.Channel
-	registration	map[string]Listener
+	ch           *amqp.Channel
+	registration map[string]Listener
 }
 
 // Listener is a function that takes action when an event is received.
@@ -27,12 +27,12 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	log.Println("New Listener registered, queue", queueName)
 
 	q, _ := r.ch.QueueDeclare(
-		queueName, 		// name
-		false,          // durable
-		false,		// delete when usused
-		false,			// exclusive
-		false,			// no-wait
-		nil,				// arguments
+		queueName, // name
+		false,     // durable
+		false,     // delete when usused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	qIn, _ := r.ch.Consume(
 		q.Name,
@@ -55,7 +55,7 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 func NewReceiver() Receiver {
 	conn, err := MakeConn()
 	if err != nil {
-		log.Println( "Failed to connect to RabbitMQ", err)
+		log.Println("Failed to connect to RabbitMQ", err)
 	}
 	ch, err := conn.Channel()
 	if err != nil {
@@ -63,7 +63,7 @@ func NewReceiver() Receiver {
 	}
 
 	return &AMQPReceiver{
-		ch: ch,
+		ch:           ch,
 		registration: make(map[string]Listener),
 	}
 }

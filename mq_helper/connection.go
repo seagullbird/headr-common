@@ -1,8 +1,8 @@
 package mq_helper
 
 import (
-	"github.com/streadway/amqp"
 	"github.com/seagullbird/headr-common/config"
+	"github.com/streadway/amqp"
 )
 
 func MakeConn() (*amqp.Connection, error) {
