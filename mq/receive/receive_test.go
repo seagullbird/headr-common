@@ -3,6 +3,7 @@ package receive_test
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-kit/kit/log"
 	"github.com/seagullbird/headr-common/mq"
 	"github.com/seagullbird/headr-common/mq/receive"
 	"github.com/streadway/amqp"
@@ -11,6 +12,13 @@ import (
 )
 
 func TestReceiveMessage(t *testing.T) {
+	var logger log.Logger
+	{
+		logger = log.NewLogfmtLogger(os.Stderr)
+		logger = log.With(logger, "ts", log.DefaultTimestampUTC)
+		logger = log.With(logger, "caller", log.DefaultCaller)
+	}
+
 	var (
 		servername = os.Getenv("RABBITMQ_PORT_5672_TCP_ADDR")
 		username   = "guest"
@@ -21,7 +29,7 @@ func TestReceiveMessage(t *testing.T) {
 		t.Fatal("Cannot connection to RabbitMQ", err)
 	}
 
-	receiver, err := receive.NewReceiver(conn)
+	receiver, err := receive.NewReceiver(conn, logger)
 	if err != nil {
 		t.Fatal("Failed to create receiver", err)
 	}

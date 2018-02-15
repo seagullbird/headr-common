@@ -2,9 +2,8 @@ package receive
 
 import (
 	"errors"
+	"github.com/go-kit/kit/log"
 	"github.com/streadway/amqp"
-	"log"
-	"reflect"
 	"sync"
 )
 
@@ -21,6 +20,7 @@ var ErrQueueAlreadyRegistered = errors.New("this queue is already registered by 
 type AMQPReceiver struct {
 	ch           *amqp.Channel
 	registration map[string]Listener
+	logger       log.Logger
 	// mux is for mutual exclusion of listener goroutines
 	mux sync.Mutex
 }
@@ -32,12 +32,12 @@ type Listener func(delivery amqp.Delivery)
 // each arrived message from that queue will be consumed by the registered Listener,
 // each consuming is mutual exclusive
 func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) error {
-	if l, ok := r.registration[queueName]; ok {
-		log.Println("Listener already registered", reflect.ValueOf(l))
+	if _, ok := r.registration[queueName]; ok {
+		r.logger.Log("errror_desc", "queue already registered", "queue_name", queueName)
 		return ErrQueueAlreadyRegistered
 	}
 	r.registration[queueName] = listener
-	log.Println("New Listener registered, queue", queueName)
+	r.logger.Log("info", "New Listener registered", "queue_name", queueName)
 
 	q, _ := r.ch.QueueDeclare(
 		queueName, // name
@@ -69,15 +69,16 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) err
 }
 
 // NewReceiver returns a new Receiver for the given connection
-func NewReceiver(conn *amqp.Connection) (Receiver, error) {
+func NewReceiver(conn *amqp.Connection, logger log.Logger) (Receiver, error) {
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Println("Failed to open AMQP channel", err)
+		logger.Log("error_desc", "Failed to open a channel", "error", err)
 		return nil, err
 	}
 
 	return &AMQPReceiver{
 		ch:           ch,
 		registration: make(map[string]Listener),
+		logger:       logger,
 	}, nil
 }

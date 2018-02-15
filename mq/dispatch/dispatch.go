@@ -2,8 +2,8 @@ package dispatch
 
 import (
 	"encoding/json"
+	"github.com/go-kit/kit/log"
 	"github.com/streadway/amqp"
-	"log"
 )
 
 // A Dispatcher dispatches messages to the message queue
@@ -16,11 +16,12 @@ type AMQPDispatcher struct {
 	channel       *amqp.Channel
 	queueName     string
 	mandatorySend bool
+	logger        log.Logger
 }
 
 // DispatchMessage function of AMQPDispatcher
 func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
-	log.Println("Dispatching message to queue", d.queueName)
+	d.logger.Log("info", "Dispatching message to queue", "queue_name", d.queueName)
 	body, err := json.Marshal(message)
 	if err == nil {
 		err = d.channel.Publish(
@@ -33,22 +34,21 @@ func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
 				Body:        []byte(body),
 			})
 		if err != nil {
-			log.Println("Failed to dispatch message, err", err)
+			d.logger.Log("error_desc", "Failed to dispatch message", "error", err)
 		}
 	} else {
-		log.Println("Failed to marshal:", err, "message", message)
+		d.logger.Log("error_desc", "Failed to marshal", "error", err, "message", message)
 	}
 	return
 }
 
 // NewDispatcher returns a new Dispatcher for the given connection and queue
-func NewDispatcher(conn *amqp.Connection, queueName string) (Dispatcher, error) {
+func NewDispatcher(conn *amqp.Connection, queueName string, logger log.Logger) (Dispatcher, error) {
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Println("Failed to open a channel", err)
+		logger.Log("error_desc", "Failed to open a channel", "error", err)
 		return nil, err
 	}
-
 	q, err := ch.QueueDeclare(
 		queueName, // name
 		false,     // durable
@@ -58,7 +58,7 @@ func NewDispatcher(conn *amqp.Connection, queueName string) (Dispatcher, error) 
 		nil,       // arguments
 	)
 	if err != nil {
-		log.Println("Failed to declare a queue", err)
+		logger.Log("error_desc", "Failed to declare a queue", "error", err)
 		return nil, err
 	}
 
@@ -66,5 +66,6 @@ func NewDispatcher(conn *amqp.Connection, queueName string) (Dispatcher, error) 
 		channel:       ch,
 		queueName:     q.Name,
 		mandatorySend: false,
+		logger:        logger,
 	}, nil
 }
