@@ -4,6 +4,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// MakeConn returns a connection to the indicated rabbitmq server with authentication
 func MakeConn(servername, username, passwd string) (*amqp.Connection, error) {
 	uri := amqp.URI{
 		Scheme:   "amqp",

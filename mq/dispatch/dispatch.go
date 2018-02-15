@@ -6,16 +6,19 @@ import (
 	"log"
 )
 
+// A Dispatcher dispatches messages to the message queue
 type Dispatcher interface {
 	DispatchMessage(message interface{}) (err error)
 }
 
+// AMQPDispatcher implements the Dispatcher interface
 type AMQPDispatcher struct {
 	channel       *amqp.Channel
 	queueName     string
 	mandatorySend bool
 }
 
+// DispatchMessage function of AMQPDispatcher
 func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
 	log.Println("Dispatching message to queue", d.queueName)
 	body, err := json.Marshal(message)
@@ -38,6 +41,7 @@ func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
 	return
 }
 
+// NewDispatcher returns a new Dispatcher for the given connection and queue
 func NewDispatcher(conn *amqp.Connection, queueName string) Dispatcher {
 	ch, err := conn.Channel()
 	if err != nil {
