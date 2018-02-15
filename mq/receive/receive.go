@@ -4,6 +4,7 @@ import (
 	"github.com/streadway/amqp"
 	"log"
 	"reflect"
+	"sync"
 )
 
 type Receiver interface {
@@ -13,6 +14,8 @@ type Receiver interface {
 type AMQPReceiver struct {
 	ch           *amqp.Channel
 	registration map[string]Listener
+	// mux is for mutual exclusion of listener goroutines
+	mux sync.Mutex
 }
 
 // Listener is a function that takes action when an event is received.
@@ -47,7 +50,9 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) {
 	// Start listening
 	go func() {
 		for d := range qIn {
+			r.mux.Lock()
 			listener(d)
+			r.mux.Unlock()
 		}
 	}()
 }
