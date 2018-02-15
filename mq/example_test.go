@@ -11,18 +11,9 @@ import (
 	"time"
 )
 
-// Example event
-type ExampleTestEvent struct {
-	Message string `json:"Message"`
-}
-
-func (e ExampleTestEvent) String() string {
-	return fmt.Sprintf("ExampleTestEvent, Message=%s", e.Message)
-}
-
 // Example listener
 func exampleListener(delivery amqp.Delivery) {
-	var event ExampleTestEvent
+	var event mq.ExampleEvent
 	if err := json.Unmarshal(delivery.Body, &event); err != nil {
 		panic(err)
 	}
@@ -42,10 +33,13 @@ func Example() {
 	if err != nil {
 		panic(err)
 	}
-	dispatcher := dispatch.NewDispatcher(dConn, "example_test")
+	dispatcher, err := dispatch.NewDispatcher(dConn, "example_test")
+	if err != nil {
+		panic(err)
+	}
 
 	// Dispatch a Message
-	msg := ExampleTestEvent{
+	msg := mq.ExampleEvent{
 		Message: "example-message",
 	}
 	err = dispatcher.DispatchMessage(msg)
@@ -62,7 +56,11 @@ func Example() {
 	if err != nil {
 		panic(err)
 	}
-	receiver := receive.NewReceiver(rConn)
+
+	receiver, err := receive.NewReceiver(rConn)
+	if err != nil {
+		panic(err)
+	}
 
 	// Register a Message listener
 	receiver.RegisterListener("example_test", exampleListener)

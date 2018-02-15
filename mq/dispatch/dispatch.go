@@ -42,10 +42,11 @@ func (d *AMQPDispatcher) DispatchMessage(message interface{}) (err error) {
 }
 
 // NewDispatcher returns a new Dispatcher for the given connection and queue
-func NewDispatcher(conn *amqp.Connection, queueName string) Dispatcher {
+func NewDispatcher(conn *amqp.Connection, queueName string) (Dispatcher, error) {
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Println("Failed to open a channel", err)
+		return nil, err
 	}
 
 	q, err := ch.QueueDeclare(
@@ -58,11 +59,12 @@ func NewDispatcher(conn *amqp.Connection, queueName string) Dispatcher {
 	)
 	if err != nil {
 		log.Println("Failed to declare a queue", err)
+		return nil, err
 	}
 
 	return &AMQPDispatcher{
 		channel:       ch,
 		queueName:     q.Name,
 		mandatorySend: false,
-	}
+	}, nil
 }
