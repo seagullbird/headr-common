@@ -26,7 +26,7 @@ func TestDispatchMessage(t *testing.T) {
 		t.Fatal("Cannot connection to RabbitMQ", err)
 	}
 
-	dispatcher, err := dispatch.NewDispatcher(conn, "dispatch_test", logger)
+	dispatcher, err := dispatch.NewDispatcher(conn, logger)
 	if err != nil {
 		t.Fatal("Cannot create dispatcher", err)
 	}
@@ -34,7 +34,7 @@ func TestDispatchMessage(t *testing.T) {
 	event := mq.ExampleEvent{
 		Message: "dispatch-test",
 	}
-	if err := dispatcher.DispatchMessage(event); err != nil {
+	if err := dispatcher.DispatchMessage("dispatch_test", event); err != nil {
 		t.Fatal("Failed to dispatch message", err)
 	}
 }

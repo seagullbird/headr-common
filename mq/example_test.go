@@ -50,7 +50,7 @@ func Example() {
 	if err != nil {
 		panic(err)
 	}
-	dispatcher, err := dispatch.NewDispatcher(dConn, "example_test", logger)
+	dispatcher, err := dispatch.NewDispatcher(dConn, logger)
 	if err != nil {
 		panic(err)
 	}
@@ -59,7 +59,7 @@ func Example() {
 	msg := mq.ExampleEvent{
 		Message: "example-message",
 	}
-	err = dispatcher.DispatchMessage(msg)
+	err = dispatcher.DispatchMessage("example_test", msg)
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +86,7 @@ func Example() {
 	time.Sleep(time.Second)
 
 	// Output:
-	// caller=dispatch.go:24 info="Dispatching message to queue" queue_name=example_test
+	// caller=dispatch.go:23 info="Dispatching message to queue" queue_name=example_test
 	// caller=receive.go:40 info="New Listener registered" queue_name=example_test
 	// caller=example_test.go:30 info="received new event" event="ExampleTestEvent, Message=example-message"
 }
