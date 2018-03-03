@@ -69,3 +69,11 @@ func NewDispatcher(conn *amqp.Connection, logger log.Logger) (Dispatcher, error)
 		logger:        logger,
 	}, nil
 }
+
+// FakeDispatcher is Only used in tests
+type FakeDispatcher struct{}
+
+// DispatchMessage function of FakeDispatcher
+func (d FakeDispatcher) DispatchMessage(queueName string, message interface{}) (err error) {
+	return nil
+}
