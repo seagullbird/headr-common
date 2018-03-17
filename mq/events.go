@@ -19,5 +19,5 @@ type SiteUpdatedEvent struct {
 }
 
 func (e SiteUpdatedEvent) String() string {
-	return fmt.Sprintf("SiteUpdatedEvent, SiteId=%s, SiteName=%s, Theme=%s, ReceivedOn=%s", e.SiteId, e.Theme, e.ReceivedOn)
+	return fmt.Sprintf("SiteUpdatedEvent, SiteId=%s, Theme=%s, ReceivedOn=%s", e.SiteId, e.Theme, e.ReceivedOn)
 }
