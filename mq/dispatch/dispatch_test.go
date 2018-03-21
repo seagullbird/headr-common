@@ -3,6 +3,7 @@ package dispatch_test
 import (
 	"github.com/go-kit/kit/log"
 	"github.com/seagullbird/headr-common/mq"
+	"github.com/seagullbird/headr-common/mq/client"
 	"github.com/seagullbird/headr-common/mq/dispatch"
 	"os"
 	"testing"
@@ -21,12 +22,8 @@ func TestDispatchMessage(t *testing.T) {
 		username   = "guest"
 		passwd     = "guest"
 	)
-	conn, err := mq.MakeConn(servername, username, passwd)
-	if err != nil {
-		t.Fatal("Cannot connection to RabbitMQ", err)
-	}
 
-	dispatcher, err := dispatch.NewDispatcher(conn, logger)
+	dispatcher, err := dispatch.NewDispatcher(client.New(servername, username, passwd), logger)
 	if err != nil {
 		t.Fatal("Cannot create dispatcher", err)
 	}

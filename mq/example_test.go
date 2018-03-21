@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-kit/kit/log"
 	"github.com/seagullbird/headr-common/mq"
+	"github.com/seagullbird/headr-common/mq/client"
 	"github.com/seagullbird/headr-common/mq/dispatch"
 	"github.com/seagullbird/headr-common/mq/receive"
 	"github.com/streadway/amqp"
@@ -41,12 +42,7 @@ func Example() {
 	)
 
 	// New dispatcher
-	// Make connection to rabbitmq server
-	dConn, err := mq.MakeConn(servername, username, passwd)
-	if err != nil {
-		panic(err)
-	}
-	dispatcher, err := dispatch.NewDispatcher(dConn, logger)
+	dispatcher, err := dispatch.NewDispatcher(client.New(servername, username, passwd), logger)
 	if err != nil {
 		panic(err)
 	}
@@ -64,13 +60,7 @@ func Example() {
 	time.Sleep(time.Second)
 
 	// New receiver
-	// Make connection to rabbitmq server
-	rConn, err := mq.MakeConn(servername, username, passwd)
-	if err != nil {
-		panic(err)
-	}
-
-	receiver, err := receive.NewReceiver(rConn, logger)
+	receiver, err := receive.NewReceiver(client.New(servername, username, passwd), logger)
 	if err != nil {
 		panic(err)
 	}

@@ -18,12 +18,12 @@ func TestRabbitmqClient(t *testing.T) {
 	}
 
 	receiver := make(chan *amqp.Error)
-	c.NotifyClose(receiver)
+	c.Connection().NotifyClose(receiver)
 	// Notice: c.Close() won't send any error into receiver coz this close is treat as a wanted action.
 	// Only unexpected connection broken error will be received at receiver. There is a difference here.
 	// I am calling c.NotifyClose() here only to test the function works well.
 	c.Close()
-	if err := c.Reconnect(); err != nil {
+	if err := c.Reconnect(1); err != nil {
 		t.Fatal(err)
 	}
 }

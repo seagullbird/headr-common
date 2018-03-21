@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-kit/kit/log"
 	"github.com/seagullbird/headr-common/mq"
+	"github.com/seagullbird/headr-common/mq/client"
 	"github.com/seagullbird/headr-common/mq/receive"
 	"github.com/streadway/amqp"
 	"os"
@@ -24,12 +25,8 @@ func TestReceiveMessage(t *testing.T) {
 		username   = "guest"
 		passwd     = "guest"
 	)
-	conn, err := mq.MakeConn(servername, username, passwd)
-	if err != nil {
-		t.Fatal("Cannot connection to RabbitMQ", err)
-	}
 
-	receiver, err := receive.NewReceiver(conn, logger)
+	receiver, err := receive.NewReceiver(client.New(servername, username, passwd), logger)
 	if err != nil {
 		t.Fatal("Failed to create receiver", err)
 	}

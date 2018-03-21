@@ -1,13 +1,17 @@
 package client
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/streadway/amqp"
+	"math/rand"
+	"time"
+)
 
 // Client represents a basic rabbitmq client that connects and closes.
 type Client interface {
 	Connect() error
-	Reconnect() error
+	Reconnect(retryTime int) error
 	Close()
-	NotifyClose(receiver chan *amqp.Error) chan *amqp.Error
+	Connection() *amqp.Connection
 }
 
 type rabbitmqClient struct {
@@ -40,8 +44,9 @@ func (c *rabbitmqClient) Connect() error {
 	return err
 }
 
-func (c *rabbitmqClient) Reconnect() error {
+func (c *rabbitmqClient) Reconnect(retryTime int) error {
 	c.Close()
+	time.Sleep(time.Duration(15+rand.Intn(60)+2*retryTime) * time.Second)
 	return c.Connect()
 }
 
@@ -52,6 +57,6 @@ func (c *rabbitmqClient) Close() {
 	}
 }
 
-func (c *rabbitmqClient) NotifyClose(receiver chan *amqp.Error) chan *amqp.Error {
-	return c.conn.NotifyClose(receiver)
+func (c *rabbitmqClient) Connection() *amqp.Connection {
+	return c.conn
 }

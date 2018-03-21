@@ -2,7 +2,9 @@ package dispatch
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/go-kit/kit/log"
+	"github.com/seagullbird/headr-common/mq/client"
 	"github.com/streadway/amqp"
 )
 
@@ -13,6 +15,7 @@ type Dispatcher interface {
 
 // AMQPDispatcher implements the Dispatcher interface
 type AMQPDispatcher struct {
+	client.Client
 	channel       *amqp.Channel
 	mandatorySend bool
 	logger        log.Logger
@@ -56,18 +59,49 @@ func (d *AMQPDispatcher) DispatchMessage(queueName string, message interface{}) 
 }
 
 // NewDispatcher returns a new Dispatcher for the given connection and queue
-func NewDispatcher(conn *amqp.Connection, logger log.Logger) (Dispatcher, error) {
-	ch, err := conn.Channel()
+func NewDispatcher(c client.Client, logger log.Logger) (Dispatcher, error) {
+	if err := c.Connect(); err != nil {
+		logger.Log("errror_desc", "Failed to connect to RabbitMQ", "error", err)
+		return nil, err
+	}
+	ch, err := c.Connection().Channel()
 	if err != nil {
 		logger.Log("error_desc", "Failed to open a channel", "error", err)
 		return nil, err
 	}
 
-	return &AMQPDispatcher{
+	dispatcher := &AMQPDispatcher{
+		Client:        c,
 		channel:       ch,
 		mandatorySend: false,
 		logger:        logger,
-	}, nil
+	}
+
+	go func() {
+		for {
+			if err := <-dispatcher.Connection().NotifyClose(make(chan *amqp.Error)); err != nil {
+				dispatcher.logger.Log("[warning]", fmt.Sprintf("MQ connection closing: %v", err))
+				// Connection broken, try reconnecting
+				for {
+					retryTime := 1
+					if err := dispatcher.Reconnect(retryTime); err != nil {
+						dispatcher.logger.Log("error_desc", "Reconnection failed", "retrytime", retryTime)
+						retryTime++
+					} else {
+						dispatcher.logger.Log("[info]", "Reconnection succeeded")
+						dispatcher.channel, err = dispatcher.Connection().Channel()
+						if err != nil {
+							dispatcher.logger.Log("error_desc", "Failed to open a channel", "error", err)
+						}
+						// TODO: deal with reconnecting success but open channel fail???
+						break
+					}
+				}
+			}
+		}
+	}()
+
+	return dispatcher, nil
 }
 
 // FakeDispatcher is Only used in tests

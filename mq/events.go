@@ -13,12 +13,12 @@ func (e ExampleEvent) String() string {
 
 // SiteUpdatedEvent is used between repoctl & hugo-helper, as well as sitemgr & k8s-client, to generate site
 type SiteUpdatedEvent struct {
-	UserId     uint   `json:"user_id"`
-	SiteId     uint   `json:"site_id"`
+	UserID     uint   `json:"user_id"`
+	SiteID     uint   `json:"site_id"`
 	Theme      string `json:"theme"`
 	ReceivedOn int64  `json:"received_on"`
 }
 
 func (e SiteUpdatedEvent) String() string {
-	return fmt.Sprintf("SiteUpdatedEvent, UserId=%s, SiteId=%s, Theme=%s, ReceivedOn=%s", e.UserId, e.SiteId, e.Theme, e.ReceivedOn)
+	return fmt.Sprintf("SiteUpdatedEvent, UserID=%s, SiteId=%s, Theme=%s, ReceivedOn=%s", e.UserID, e.SiteID, e.Theme, e.ReceivedOn)
 }

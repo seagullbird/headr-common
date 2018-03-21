@@ -2,7 +2,9 @@ package receive
 
 import (
 	"errors"
+	"fmt"
 	"github.com/go-kit/kit/log"
+	"github.com/seagullbird/headr-common/mq/client"
 	"github.com/streadway/amqp"
 	"sync"
 )
@@ -18,6 +20,7 @@ var ErrQueueAlreadyRegistered = errors.New("this queue is already registered by 
 
 // AMQPReceiver implements the Receiver interface
 type AMQPReceiver struct {
+	client.Client
 	ch           *amqp.Channel
 	registration map[string]Listener
 	logger       log.Logger
@@ -69,16 +72,47 @@ func (r *AMQPReceiver) RegisterListener(queueName string, listener Listener) err
 }
 
 // NewReceiver returns a new Receiver for the given connection
-func NewReceiver(conn *amqp.Connection, logger log.Logger) (Receiver, error) {
-	ch, err := conn.Channel()
+func NewReceiver(c client.Client, logger log.Logger) (Receiver, error) {
+	if err := c.Connect(); err != nil {
+		logger.Log("errror_desc", "Failed to connect to RabbitMQ", "error", err)
+		return nil, err
+	}
+	ch, err := c.Connection().Channel()
 	if err != nil {
 		logger.Log("error_desc", "Failed to open a channel", "error", err)
 		return nil, err
 	}
 
-	return &AMQPReceiver{
+	receiver := &AMQPReceiver{
+		Client:       c,
 		ch:           ch,
 		registration: make(map[string]Listener),
 		logger:       logger,
-	}, nil
+	}
+
+	go func() {
+		for {
+			if <-receiver.Connection().NotifyClose(make(chan *amqp.Error)) != nil {
+				receiver.logger.Log("[warning]", fmt.Sprintf("MQ connection closing: %v", err))
+				// Connection broken, try reconnecting
+				for {
+					retryTime := 1
+					if err := receiver.Reconnect(retryTime); err != nil {
+						receiver.logger.Log("error_desc", "Reconnection failed", "retrytime", retryTime)
+						retryTime++
+					} else {
+						receiver.logger.Log("[info]", "Reconnection succeeded")
+						receiver.ch, err = receiver.Connection().Channel()
+						if err != nil {
+							receiver.logger.Log("error_desc", "Failed to open a channel", "error", err)
+						}
+						// TODO: deal with reconnecting success but open channel fail???
+						break
+					}
+				}
+			}
+		}
+	}()
+
+	return receiver, nil
 }
