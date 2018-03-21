@@ -32,11 +32,7 @@ func makeExampleListener(logger log.Logger) receive.Listener {
 }
 
 func Example() {
-	var logger log.Logger
-	{
-		logger = log.NewLogfmtLogger(os.Stdout)
-		logger = log.With(logger, "caller", log.DefaultCaller)
-	}
+	logger := log.NewLogfmtLogger(os.Stdout)
 
 	var (
 		servername = os.Getenv("RABBITMQ_PORT_5672_TCP_ADDR")
@@ -86,7 +82,7 @@ func Example() {
 	time.Sleep(time.Second)
 
 	// Output:
-	// caller=dispatch.go:23 info="Dispatching message to queue" queue_name=example_test
-	// caller=receive.go:40 info="New Listener registered" queue_name=example_test
-	// caller=example_test.go:30 info="received new event" event="ExampleTestEvent, Message=example-message"
+	// info="Dispatching message to queue" queue_name=example_test
+	// info="New Listener registered" queue_name=example_test
+	// info="received new event" event="ExampleTestEvent, Message=example-message"
 }
