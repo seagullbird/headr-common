@@ -1,5 +1,7 @@
 package receive
 
+//go:generate mockgen -destination=./mock/mock_receive.go -package=mock github.com/seagullbird/headr-common/mq/receive Receiver
+
 import (
 	"errors"
 	"fmt"

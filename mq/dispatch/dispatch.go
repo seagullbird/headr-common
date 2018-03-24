@@ -1,5 +1,7 @@
 package dispatch
 
+//go:generate mockgen -destination=./mock/mock_dispatch.go -package=mock github.com/seagullbird/headr-common/mq/dispatch Dispatcher
+
 import (
 	"encoding/json"
 	"fmt"

@@ -28,3 +28,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/streadway/amqp"
+
+[[constraint]]
+  name = "github.com/golang/mock"
+  branch = "master"
