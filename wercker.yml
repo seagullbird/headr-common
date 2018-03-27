@@ -19,6 +19,6 @@ build:
           while ! $(python -c "import socket; soc=socket.socket(); soc.connect(('$RABBITMQ_PORT_5672_TCP_ADDR', $RABBITMQ_PORT_5672_TCP_PORT))"); \
           do sleep 3; done
     - script:
-        name: go test
+        name: "Test"
         code: |
-          go test -v ./...
+          ./test.sh
