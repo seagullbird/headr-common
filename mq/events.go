@@ -15,6 +15,7 @@ func (e ExampleEvent) String() string {
 type SiteUpdatedEvent struct {
 	UserID     uint   `json:"user_id"`
 	SiteID     uint   `json:"site_id"`
+	SiteName   string `json:"site_name"`
 	Theme      string `json:"theme"`
 	ReceivedOn int64  `json:"received_on"`
 }
